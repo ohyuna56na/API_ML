@@ -82,16 +82,21 @@ def weather_score(place_weather, user_weather):
 
 
 # ==========================
-# RECOMMENDATION ENDPOINT
+# ROOT ENDPOINT (GET ONLY)
 # ==========================
 
 @app.route("/", methods=["GET"])
 def home():
-    return {
+    return jsonify({
         "status": "API ML Running",
         "endpoint": "/recommend (POST)"
-    }
+    })
 
+# ==========================
+# RECOMMEND ENDPOINT (POST ONLY)
+# ==========================
+
+@app.route("/recommend", methods=["POST"])
 def recommend():
 
     data = request.json
@@ -126,6 +131,7 @@ def recommend():
 
     idx = culinary[culinary['Title'] == title].index[0]
     cbf_scores = cosine_sim[idx]
+    cbf_dict = dict(zip(culinary['id'], cbf_scores))
 
     # =====================
     # UBCF

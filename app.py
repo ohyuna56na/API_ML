@@ -85,7 +85,13 @@ def weather_score(place_weather, user_weather):
 # RECOMMENDATION ENDPOINT
 # ==========================
 
-@app.route("/recommend", methods=["POST"])
+@app.route("/", methods=["GET"])
+def home():
+    return {
+        "status": "API ML Running",
+        "endpoint": "/recommend (POST)"
+    }
+
 def recommend():
 
     data = request.json

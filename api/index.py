@@ -125,3 +125,4 @@ def recommend():
 @app.route("/")
 def home():
     return jsonify({"status": "ML API Running 🚀"})
+handler = app

@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=220&section=header&text=Rencangku%20Hybrid%20Recommendation%20API&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2193b0,100:6dd5ed&height=220&section=header&text=Rencangku%20Hybrid%20Recommendation%20API&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
 
 <br>
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=600&size=22&pause=1000&color=6C63FF&center=true&vCenter=true&width=700&lines=Hybrid+Recommendation+System;User-Based+%2B+Content-Based;Context-Aware+Weather+Integration;Flask+REST+API;Deployed+on+Vercel" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=600&size=22&pause=1000&color=2196F3&center=true&vCenter=true&width=700&lines=Hybrid+Recommendation+System;User-Based+%2B+Content-Based;Context-Aware+Weather+Integration;Flask+REST+API;Deployed+on+Vercel" />
 
 <br><br>
 
@@ -190,6 +190,6 @@ API_ML/
 
 <br><br>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:764ba2,100:667eea&height=120&section=footer"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2193b0,100:6dd5ed&height=120&section=footer"/>
 
 </div>

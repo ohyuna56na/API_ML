@@ -1,207 +1,195 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-</head>
-<body style="margin:0; font-family: Arial, Helvetica, sans-serif; background-color:#0f172a; color:#e2e8f0;">
+<div align="center">
 
-<!-- Animated Banner -->
-<div style="padding:60px 20px; text-align:center; background: linear-gradient(-45deg, #1e293b, #0f172a, #1e40af, #0f172a); background-size:400% 400%; animation: gradient 10s ease infinite;">
-<h1 style="font-size:42px; margin-bottom:10px;">🍽️ Rencangku Hybrid Recommendation API</h1>
-<p style="font-size:18px; opacity:0.9;">
-Production-Ready Machine Learning API for Context-Aware Culinary Recommendation
-</p>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=220&section=header&text=Rencangku%20Hybrid%20Recommendation%20API&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
+
+<br>
+
+<img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=600&size=22&pause=1000&color=6C63FF&center=true&vCenter=true&width=700&lines=Hybrid+Recommendation+System;User-Based+%2B+Content-Based;Context-Aware+Weather+Integration;Flask+REST+API;Deployed+on+Vercel" />
+
+<br><br>
+
+<img src="https://img.shields.io/badge/Python-3.10-blue?logo=python&style=for-the-badge">
+<img src="https://img.shields.io/badge/Flask-API-black?logo=flask&style=for-the-badge">
+<img src="https://img.shields.io/badge/Scikit--Learn-ML-orange?logo=scikit-learn&style=for-the-badge">
+<img src="https://img.shields.io/badge/Vercel-Deployment-black?logo=vercel&style=for-the-badge">
+<img src="https://img.shields.io/badge/Status-Production-success?style=for-the-badge">
+
+<br><br>
+
+<b>Machine Learning API for Hybrid Culinary Recommendation System</b><br>
+Built with Flask • Scikit-Learn • Context-Aware Weather
+
 </div>
 
-<style>
-@keyframes gradient {
-  0% {background-position: 0% 50%;}
-  50% {background-position: 100% 50%;}
-  100% {background-position: 0% 50%;}
-}
-.section {
-  padding:40px 20px;
-  max-width:1000px;
-  margin:auto;
-}
-.card {
-  background-color:#1e293b;
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:20px;
-}
-.badge img {
-  margin:5px;
-}
-code {
-  background:#0f172a;
-  padding:5px 8px;
-  border-radius:6px;
-  color:#38bdf8;
-}
-pre {
-  background:#0f172a;
-  padding:15px;
-  border-radius:10px;
-  overflow-x:auto;
-}
-</style>
+<hr>
 
-<!-- Badges -->
-<div class="section" style="text-align:center;">
-<div class="badge">
-<img src="https://img.shields.io/badge/Python-3.10-blue?logo=python">
-<img src="https://img.shields.io/badge/Flask-REST%20API-black?logo=flask">
-<img src="https://img.shields.io/badge/Scikit--Learn-ML-orange?logo=scikit-learn">
-<img src="https://img.shields.io/badge/Deployment-Vercel-black?logo=vercel">
-<img src="https://img.shields.io/badge/Status-Production-success">
-</div>
-</div>
+<h2>🚀 Overview</h2>
 
-<!-- About -->
-<div class="section">
-<h2>🚀 Project Overview</h2>
-<div class="card">
 <p>
-This project is a <b>Hybrid Recommendation System API</b> developed to deliver personalized culinary recommendations.
+<b>Rencangku Hybrid Recommendation API</b> adalah REST API berbasis Machine Learning
+yang memberikan rekomendasi tempat kuliner menggunakan pendekatan:
 </p>
-<p>
-The system integrates:
-</p>
+
 <ul>
 <li>🤝 User-Based Collaborative Filtering (UBCF)</li>
-<li>🧠 Content-Based Filtering (TF-IDF)</li>
-<li>🌦️ Real-Time Weather Context Integration</li>
-<li>📍 Location-Aware Personalization</li>
+<li>🧠 Content-Based Filtering (CBF)</li>
+<li>🌦️ Context-Aware (Weather Integration)</li>
+<li>📍 Location-Based Personalization</li>
 </ul>
-<p>
-Designed for scalability and deployment-ready architecture using Flask and Vercel.
-</p>
-</div>
-</div>
 
-<!-- Architecture -->
-<div class="section">
+<hr>
+
 <h2>🧠 Recommendation Architecture</h2>
-<div class="card">
-<p><b>Hybrid Formula:</b></p>
-<p style="font-size:18px; color:#38bdf8;">
-Hybrid Score = α (UBCF) + (1 - α) (CBF)
-</p>
-<p>Default α = 0.6</p>
+
+<div align="center">
+<h3>Hybrid Score = α (UBCF) + (1 - α) (CBF)</h3>
+<p>Default: <b>α = 0.6</b></p>
 </div>
 
-<div class="card">
-<h3>1️⃣ User-Based Collaborative Filtering</h3>
-<p>Computes similarity between users using cosine similarity on user-item interaction matrix.</p>
+<h4>1️⃣ User-Based Collaborative Filtering</h4>
+<p>Menghitung kemiripan antar user menggunakan cosine similarity.</p>
 
-<h3>2️⃣ Content-Based Filtering</h3>
-<p>Uses TF-IDF vectorization on culinary categories to compute item similarity.</p>
+<h4>2️⃣ Content-Based Filtering</h4>
+<p>Menggunakan TF-IDF vectorization pada kategori kuliner.</p>
 
-<h3>3️⃣ Context-Aware (Weather Integration)</h3>
-<p>Integrates OpenWeather API to adjust recommendation relevance:</p>
+<h4>3️⃣ Context-Aware Weather</h4>
+<p>Terintegrasi dengan OpenWeather API untuk menyesuaikan rekomendasi berdasarkan kondisi:</p>
+
 <ul>
-<li>❄️ Cold</li>
-<li>☀️ Hot</li>
-<li>🌤️ Neutral</li>
+<li>❄️ Dingin</li>
+<li>☀️ Panas</li>
+<li>🌤️ Semua</li>
 </ul>
-</div>
-</div>
 
-<!-- Tech Stack -->
-<div class="section">
-<h2>🛠 Tech Stack</h2>
-<div class="card">
-<ul>
-<li>🐍 Python</li>
-<li>🌐 Flask</li>
-<li>📊 Pandas & NumPy</li>
-<li>🧮 Scikit-Learn</li>
-<li>☁️ OpenWeather API</li>
-<li>🚀 Vercel Deployment</li>
-</ul>
-</div>
-</div>
+<hr>
 
-<!-- API -->
-<div class="section">
+<h2>🏗️ System Architecture</h2>
+
+<pre>
+Mobile App
+     │
+     ▼
+Flask API (Vercel)
+     │
+     ├── Hybrid Recommender Model (.pkl)
+     ├── Weather API (OpenWeather)
+     └── Location Filtering
+     │
+     ▼
+Personalized Recommendation List
+</pre>
+
+<hr>
+
+<h2>📦 Tech Stack</h2>
+
+<table>
+<tr>
+<td><b>Language</b></td>
+<td>Python 3.10</td>
+</tr>
+<tr>
+<td><b>Backend</b></td>
+<td>Flask</td>
+</tr>
+<tr>
+<td><b>Machine Learning</b></td>
+<td>Scikit-Learn</td>
+</tr>
+<tr>
+<td><b>Data Processing</b></td>
+<td>Pandas, NumPy</td>
+</tr>
+<tr>
+<td><b>Context Integration</b></td>
+<td>OpenWeather API</td>
+</tr>
+<tr>
+<td><b>Deployment</b></td>
+<td>Vercel</td>
+</tr>
+</table>
+
+<hr>
+
+<h2>📁 Project Structure</h2>
+
+<pre>
+API_ML/
+│
+├── api/
+│   └── index.py
+│
+├── hybrid_recommender_model.pkl
+├── requirements.txt
+├── vercel.json
+└── README.md
+</pre>
+
+<hr>
+
 <h2>📡 API Endpoint</h2>
-<div class="card">
-<p><b>POST</b> <code>/recommend</code></p>
 
-<p><b>Request Body:</b></p>
-<pre>{
+<h3>POST /recommend</h3>
+
+<h4>Request Body (JSON)</h4>
+
+<pre>
+{
   "user_id": 1,
   "user_lat": -6.9246,
   "user_lon": 106.9051,
   "alpha": 0.6,
   "top_n": 10
-}</pre>
+}
+</pre>
 
-<p><b>Response:</b></p>
-<pre>[
-  {
-    "culinary_places_id": 12,
-    "name": "Warung Makan A",
-    "score": 0.87
-  }
-]</pre>
-</div>
-</div>
+<h4>Response</h4>
 
-<!-- Installation -->
-<div class="section">
-<h2>⚙️ Local Setup</h2>
-<div class="card">
-<pre>git clone https://github.com/ohyuna56na/API_ML.git
-cd API_ML
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-python api/index.py</pre>
+<pre>
+{
+    "recommendations": [
+        {
+            "Categorize_Weather": "semua",
+            "Category": "indonesian",
+            "Distance_Score": 0.0819728419520229,
+            "Distance_km": 11.199162261389942,
+            "Latitude": -6.8891401,
+            "Longitude": 107.0001341,
+            "Popularity_Score": 0.03207941483803553,
+            "Price_range": "Rp 25.000 - 50.000",
+            "Rating": 4.3,
+            "Rating_Score": 0.86,
+            "Rating_count": 307,
+            "Title": "RM. Marem 1",
+            "culinary_places_id": 16
+        }
+    ],
+    "weather": "semua"
+}
+</pre>
 
-<p>API runs at:</p>
-<code>http://127.0.0.1:5000</code>
-</div>
-</div>
+<hr>
 
-<!-- Portfolio Highlight -->
-<div class="section">
-<h2>🏆 Portfolio Highlights</h2>
-<div class="card">
-<ul>
-<li>✔️ End-to-End ML Pipeline</li>
-<li>✔️ Hybrid Recommendation Modeling</li>
-<li>✔️ Context-Aware Personalization</li>
-<li>✔️ REST API Deployment</li>
-<li>✔️ Production-Safe Model Serialization</li>
-</ul>
-</div>
-</div>
+<p><b>Production-safe:<b></p>
 
-<!-- Academic -->
-<div class="section">
-<h2>🎓 Academic Research</h2>
-<div class="card">
-<p>
-Developed as part of a thesis project:
-</p>
-<p><b>
-Hybrid Recommendation System for Culinary Places using Context-Aware Approach
-</b></p>
-</div>
-</div>
+<div align="center">
 
-<!-- Author -->
-<div class="section" style="text-align:center;">
 <h2>👩‍💻 Author</h2>
-<p><b>ohyuna</b></p>
-</div>
 
-<!-- Footer -->
-<div style="text-align:center; padding:20px; background:#0f172a;">
-<p>⭐ If this project interests you, feel free to connect!</p>
-</div>
+<b>ohyuna</b>
+<br><br>
 
-</body>
-</html>
+<a href="https://github.com/ohyuna56na">
+<img src="https://img.shields.io/badge/GitHub-Profile-black?logo=github&style=for-the-badge">
+</a>
+
+<br><br>
+
+⭐ If you find this project useful, please consider giving it a star!
+
+<br><br>
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:764ba2,100:667eea&height=120&section=footer"/>
+
+</div>

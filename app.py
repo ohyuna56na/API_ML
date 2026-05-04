@@ -2,11 +2,12 @@ from fastapi import FastAPI
 import joblib
 import pandas as pd
 import numpy as np
+import gradio as gr
 
 app = FastAPI()
 
 # ======================
-# LOAD MODEL (sekali saja saat start)
+# LOAD MODEL 
 # ======================
 tfidf = joblib.load("model/tfidf.pkl")
 similarity_df = joblib.load("model/similarity_df.pkl")
@@ -18,92 +19,112 @@ user_mean = joblib.load("model/user_mean.pkl")
 
 df_items = joblib.load("model/df_items.pkl")
 
-# ======================
-# HYBRID PREDICT
-# ======================
-def hybrid_predict(user_id, item_id, k_neighbors=10):
+# =========================
+# UBCF
+# =========================
+def predict_single(user_id, item_id, k_neighbors=10):
 
-    if user_id not in user_item.index:
+    if user_id not in user_item_centered.index:
         return None
 
-    if item_id not in user_item.columns:
+    if item_id not in user_item_centered.columns:
         return None
 
-    # ===== UBCF =====
-    sim_users = user_similarity_df.loc[user_id].drop(user_id)
-    sim_users = sim_users.sort_values(ascending=False).head(k_neighbors)
+    sim_scores = user_similarity_df.loc[user_id].drop(user_id)
+    sim_scores = sim_scores.sort_values(ascending=False).head(k_neighbors)
 
-    num, den = 0, 0
+    numerator, denominator = 0, 0
 
-    for other_user, sim in sim_users.items():
+    for other_user, sim in sim_scores.items():
         rating = user_item_centered.loc[other_user, item_id]
 
         if not np.isnan(rating):
-            num += sim * rating
-            den += sim
+            numerator += sim * rating
+            denominator += sim
 
-    if den == 0:
-        ubcf_score = user_mean[user_id]
-    else:
-        ubcf_score = user_mean[user_id] + (num / den)
+    if denominator == 0:
+        return user_mean[user_id]
 
-    # ===== CBF =====
-    if item_id not in similarity_df.index:
+    return user_mean[user_id] + (numerator / denominator)
+
+# =========================
+# CBF
+# =========================
+def predict_cbf(user_id, item_id, train_df):
+
+    user_data = train_df[train_df['users_id'] == user_id]
+
+    if user_data.empty:
         return None
 
-    cbf_score = similarity_df.loc[item_id].mean()
+    liked_items = user_data.sort_values(
+        'score', ascending=False
+    )['culinary_places_id'].head(5)
 
-    # ===== FINAL =====
-    final_score = 0.7 * ubcf_score + 0.3 * cbf_score
+    scores = []
 
-    return float(final_score)
+    for liked_item in liked_items:
+        if item_id in similarity_df.index and liked_item in similarity_df.columns:
+            scores.append(similarity_df.loc[item_id, liked_item])
 
-# ======================
-# ENDPOINT
-# ======================
-@app.get("/")
-def home():
-    return {"message": "API Hybrid Recommendation Running 🚀"}
+    return np.mean(scores) if scores else None
 
-@app.get("/recommend/{user_id}")
-def recommend(user_id: int):
+# =========================
+# HYBRID
+# =========================
+def hybrid_recommend(user_id, top_n=5):
 
     predictions = {}
 
     for item in df_items['culinary_places_id']:
 
-        # skip item yg sudah pernah diinteraksi
-        if user_id in user_item.index:
-            if item in user_item.columns:
-                if not np.isnan(user_item.loc[user_id, item]):
-                    continue
+        ubcf = predict_single(user_id, item)
+        cbf  = None  # bisa skip kalau ga ada train
 
-        score = hybrid_predict(user_id, item)
+        if ubcf is None:
+            continue
 
-        if score is not None:
-            predictions[item] = score
+        final_score = ubcf  # simple version dulu
 
-    # SORT
-    top_items = sorted(
+        predictions[item] = final_score
+
+    sorted_items = sorted(
         predictions.items(),
         key=lambda x: x[1],
         reverse=True
-    )[:10]
+    )[:top_n]
 
-    results = []
+    ids = [x[0] for x in sorted_items]
 
-    for item_id, score in top_items:
-        item = df_items[df_items['culinary_places_id'] == item_id].iloc[0]
+    result = df_items[
+        df_items['culinary_places_id'].isin(ids)
+    ][['culinary_places_id', 'Title', 'Category', 'Rating']]
 
-        results.append({
-            "id": int(item_id),
-            "title": item["Title"],
-            "category": item["Category"],
-            "rating": float(item["Rating"]),
-            "score": float(score)
-        })
+    return result.to_dict(orient="records")
 
-    return {
-        "user_id": user_id,
-        "recommendations": results
-    }
+# =========================
+# API ENDPOINT
+# =========================
+@app.get("/")
+def home():
+    return {"message": "API Recommendation Running 🚀"}
+
+@app.get("/recommend/{user_id}")
+def recommend(user_id: int):
+    return hybrid_recommend(user_id)
+
+# =========================
+# GRADIO WRAPPER
+# =========================
+def gradio_ui(user_id):
+    return hybrid_recommend(int(user_id))
+
+demo = gr.Interface(
+    fn=gradio_ui,
+    inputs="number",
+    outputs="json",
+    title="Hybrid Recommendation System"
+)
+
+# IMPORTANT
+demo.launch()

@@ -1,199 +1,109 @@
-import pickle
-import os
+from fastapi import FastAPI
+import joblib
 import pandas as pd
 import numpy as np
-import requests
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import MinMaxScaler
-from math import radians, cos, sin, asin, sqrt
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
 
-# ==============================
-# LOAD MODEL DATA ONLY
-# ==============================
-MODEL_PATH = os.path.join(
-    os.path.dirname(__file__),
-    "..",
-    "hybrid_recommender_model.pkl"
-)
+# ======================
+# LOAD MODEL (sekali saja saat start)
+# ======================
+tfidf = joblib.load("model/tfidf.pkl")
+similarity_df = joblib.load("model/similarity_df.pkl")
 
-with open(MODEL_PATH, "rb") as f:
-    model = pickle.load(f)
+user_item = joblib.load("model/user_item.pkl")
+user_item_centered = joblib.load("model/user_item_centered.pkl")
+user_similarity_df = joblib.load("model/user_similarity.pkl")
+user_mean = joblib.load("model/user_mean.pkl")
 
-df_items = model["df_items"]
-user_item = model["user_item"]
-user_mean = model["user_mean"]
-user_similarity_df = model["user_similarity_df"]
-item_similarity_df = model["item_similarity_df"]
+df_items = joblib.load("model/df_items.pkl")
 
-
-# ==============================
-# WEATHER HELPER (WAJIB)
-# ==============================
-def get_weather(lat, lon, api_key):
-    url = "https://api.openweathermap.org/data/2.5/weather"
-    params = {"lat": lat, "lon": lon, "appid": api_key, "units": "metric"}
-
-    res = requests.get(url, params=params)
-    data = res.json()
-
-    temp = data["main"]["temp"]
-
-    if temp <= 22:
-        return "dingin"
-    elif temp >= 30:
-        return "panas"
-    return "semua"
-
-
-# ==============================
-# FUNCTION UBCF
-# ==============================
-def predict_single(user_id, item_id, k_neighbors=5):
-
-    if user_id not in user_item.index or item_id not in user_item.columns:
-        return None
-
-    sim_scores = user_similarity_df.loc[user_id].drop(user_id)
-    sim_scores = sim_scores[sim_scores > 0].sort_values(ascending=False).head(k_neighbors)
-
-    numerator = 0
-    denominator = 0
-
-    for other_user, sim in sim_scores.items():
-        rating = user_item.loc[other_user, item_id]
-        if not np.isnan(rating):
-            numerator += sim * (rating - user_mean[other_user])
-            denominator += sim
-
-    if denominator == 0:
-        return None
-
-    return user_mean[user_id] + (numerator / denominator)
-
-
-# ==============================
-# FUNCTION CBF
-# ==============================
-def predict_cbf(user_id, item_id):
-    user_history = user_item.loc[user_id].dropna()
-    if len(user_history) == 0:
-        return 0
-
-    numerator = 0
-    denominator = 0
-
-    for interacted_item, score in user_history.items():
-        if item_id in item_similarity_df.index:
-            sim = item_similarity_df.loc[item_id, interacted_item]
-            numerator += sim * score
-            denominator += sim
-
-    return numerator / denominator if denominator != 0 else 0
-
-
-# ==============================
+# ======================
 # HYBRID PREDICT
-# ==============================
-def hybrid_predict(user_id, item_id, user_lat, user_lon, weather_condition, alpha=0.6):
+# ======================
+def hybrid_predict(user_id, item_id, k_neighbors=10):
 
-    ubcf_score = predict_single(user_id, item_id)
-    cbf_score = predict_cbf(user_id, item_id)
-
-    item_data = df_items[df_items["culinary_places_id"] == item_id]
-    if item_data.empty:
+    if user_id not in user_item.index:
         return None
 
-    def haversine(lat1, lon1, lat2, lon2):
-        R = 6371
-        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-        dlat = lat2 - lat1
-        dlon = lon2 - lon1
-        a = sin(dlat/2)**2 + cos(lat1)*cos(lat2)*sin(dlon/2)**2
-        return 2 * asin(sqrt(a)) * R
-
-    distance = haversine(
-        user_lat, user_lon,
-        item_data["Latitude"].values[0],
-        item_data["Longitude"].values[0]
-    )
-    distance_score = 1 / (1 + distance)
-
-    # WEATHER SCORE (WAJIB)
-    item_weather = item_data["Categorize_Weather"].values[0]
-    weather_score = 1 if (item_weather == weather_condition or item_weather == "semua") else 0
-
-    if ubcf_score is None and cbf_score is None:
+    if item_id not in user_item.columns:
         return None
 
-    if ubcf_score is None:
-        base = cbf_score
-    elif cbf_score is None:
-        base = ubcf_score
+    # ===== UBCF =====
+    sim_users = user_similarity_df.loc[user_id].drop(user_id)
+    sim_users = sim_users.sort_values(ascending=False).head(k_neighbors)
+
+    num, den = 0, 0
+
+    for other_user, sim in sim_users.items():
+        rating = user_item_centered.loc[other_user, item_id]
+
+        if not np.isnan(rating):
+            num += sim * rating
+            den += sim
+
+    if den == 0:
+        ubcf_score = user_mean[user_id]
     else:
-        base = alpha * ubcf_score + (1 - alpha) * cbf_score
+        ubcf_score = user_mean[user_id] + (num / den)
 
-    return (0.6 * base) + (0.25 * distance_score) + (0.15 * weather_score)
+    # ===== CBF =====
+    if item_id not in similarity_df.index:
+        return None
 
+    cbf_score = similarity_df.loc[item_id].mean()
 
-# ==============================
-# RECOMMENDATION ENDPOINT
-# ==============================
-@app.route("/recommend", methods=["POST"])
-def recommend():
-    data = request.json
+    # ===== FINAL =====
+    final_score = 0.7 * ubcf_score + 0.3 * cbf_score
 
-    user_id = data.get("user_id")
-    user_lat = data.get("user_lat")
-    user_lon = data.get("user_lon")
-    alpha = data.get("alpha", 0.6)
-    top_n = data.get("top_n", 10)
+    return float(final_score)
 
-    if user_id is None:
-        return jsonify({"error": "user_id required"}), 400
+# ======================
+# ENDPOINT
+# ======================
+@app.get("/")
+def home():
+    return {"message": "API Hybrid Recommendation Running 🚀"}
 
-    # WEATHER WAJIB
-    api_key = "8c79ecf19f5084f74baa0c841a95214f"
-    weather_condition = get_weather(user_lat, user_lon, api_key)
+@app.get("/recommend/{user_id}")
+def recommend(user_id: int):
 
     predictions = {}
 
-    for item in df_items["culinary_places_id"]:
-        score = hybrid_predict(
-            user_id,
-            item,
-            user_lat,
-            user_lon,
-            weather_condition,
-            alpha
-        )
+    for item in df_items['culinary_places_id']:
+
+        # skip item yg sudah pernah diinteraksi
+        if user_id in user_item.index:
+            if item in user_item.columns:
+                if not np.isnan(user_item.loc[user_id, item]):
+                    continue
+
+        score = hybrid_predict(user_id, item)
+
         if score is not None:
             predictions[item] = score
 
-    sorted_items = sorted(predictions.items(), key=lambda x: x[1], reverse=True)
+    # SORT
+    top_items = sorted(
+        predictions.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:10]
 
-    if top_n is None or top_n == -1:
-        item_ids = [x[0] for x in sorted_items]
-    else:
-        item_ids = [x[0] for x in sorted_items[:top_n]]
+    results = []
 
-    result = df_items[df_items["culinary_places_id"].isin(item_ids)]
+    for item_id, score in top_items:
+        item = df_items[df_items['culinary_places_id'] == item_id].iloc[0]
 
-    return jsonify({
-        "weather": weather_condition,
-        "recommendations": result.to_dict(orient="records")
-    })
+        results.append({
+            "id": int(item_id),
+            "title": item["Title"],
+            "category": item["Category"],
+            "rating": float(item["Rating"]),
+            "score": float(score)
+        })
 
-
-@app.route("/")
-def home():
-    return "ML Backend Rencangku is running."
-
-
-if __name__ == "__main__":
-    app.run()
+    return {
+        "user_id": user_id,
+        "recommendations": results
+    }
